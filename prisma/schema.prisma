@@ -1,0 +1,55 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// Single row holding the shared challenge configuration
+// (start date, daily/weekly goals, stake amount, duration).
+model Challenge {
+  id           String   @id @default("default")
+  name         String   @default("100 Push-Ups a Day Challenge")
+  startDate    DateTime @db.Date
+  durationDays Int      @default(365)
+  dailyGoal    Int      @default(100)
+  weeklyGoal   Int      @default(700)
+  stakeAmount  Int      @default(500) // dollars, per failed week
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @unique
+  pinHash   String
+  createdAt DateTime @default(now())
+  entries   Entry[]
+  sessions  Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+// One row per logged set of push-ups. Multiple rows may share the
+// same (userId, date) to support multi-entry logging in a single day.
+model Entry {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date      DateTime @db.Date // the calendar day this entry counts toward
+  count     Int
+  note      String?
+  createdAt DateTime @default(now())
+
+  @@index([userId, date])
+}
