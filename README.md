@@ -42,7 +42,14 @@ same day and week cutoffs regardless of timezone.
    npm install
    ```
 
-2. Copy the env template and fill in a Postgres connection string and a
+2. Start a local Postgres (skip this if you already have one, or point
+   `DATABASE_URL` at a free Neon/Supabase database instead):
+
+   ```bash
+   docker compose up -d
+   ```
+
+3. Copy the env template and fill in a Postgres connection string and a
    random session secret:
 
    ```bash
@@ -52,20 +59,33 @@ same day and week cutoffs regardless of timezone.
    # CHALLENGE_START_DATE=2026-01-01   (the day your challenge begins)
    ```
 
-3. Run migrations and seed the challenge configuration:
+4. Run migrations and seed the challenge configuration (defaults to
+   today's date if you skip `CHALLENGE_START_DATE`):
 
    ```bash
    npx prisma migrate dev
    npx tsx prisma/seed.ts
    ```
 
-4. Start the dev server:
+5. Start the dev server:
 
    ```bash
    npm run dev
    ```
 
-5. Visit `http://localhost:3000`, create an account, and start logging.
+6. Visit `http://localhost:3000`, create an account (any name + a 4-6
+   digit PIN), and start logging push-ups.
+
+To test it as a group of friends on one machine: open a second browser
+(or an incognito window) and sign up with a different name — each
+name+PIN is a separate account, and they all show up together on
+`/group`.
+
+To let friends on your phone/other devices hit your local dev server
+before deploying anywhere, run `npm run dev -- -H 0.0.0.0` and share
+`http://<your-machine's-LAN-IP>:3000` while everyone's on the same
+network — this is just for a quick local test, not a permanent link (use
+the Vercel deploy below for that).
 
 ## Deploying (Vercel + hosted Postgres)
 
